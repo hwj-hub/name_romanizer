@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<title>영문 이름 변환기 — 한글 이름 영어로, 여권 영문 이름·로마자 표기법 변환 (무료)</title>
+<meta name="description" content="한글 이름을 영어로 바꿔 드립니다. 국어의 로마자 표기법 철자와 함께 Jung·Kyung·Shin·Woo처럼 흔히 쓰는 다른 철자 후보, 성씨 91개의 영문 철자(김 Kim, 이 Lee, 박 Park, 최 Choi)를 보여 주고, 여권·항공권·영문 명함·논문 형식으로 바로 복사. 받침 뒤 ㅇ처럼 헷갈리는 이름은 붙임표를 권해 드려요. 여러 명 명단도 한 번에 변환해 표로 복사·CSV 저장. 설치·가입 없이 무료.">
+<meta property="og:title" content="영문 이름 변환기 · 한글 이름을 여권 영문 이름으로">
+<meta property="og:description" content="표기법 철자와 흔히 쓰는 다른 철자 후보, 여권·항공권·명함 형식까지 한 번에. 명단도 한꺼번에 바꿔요.">
+<meta property="og:type" content="website">
+<!-- 링크 미리보기 그림: 스크래퍼는 절대 주소만 읽으므로 배포 주소로 적는다. 그림은 make_thumbnail.py 가 만든 og-image.png(1200×630) -->
+<meta property="og:image" content="https://hwj-hub.github.io/name_romanizer/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="영문 이름 변환기 — 홍길동을 넣으면 HONG GILDONG 과 성·이름 철자 후보가 나오는 화면">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%94%A4%3C/text%3E%3C/svg%3E">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  color-scheme:light dark;
+  --bg:#f2f4f8; --card:#fff; --card2:#f7f8fb; --fg:#151a26; --muted:#556072; --line:#e0e4ec;
+  --accent:#2563eb; --accent2:#0891b2; --afg:#fff;
+  --ok:#0f766e; --okbg:#e6f3f1; --warn:#b45309; --warnbg:#fef4e6; --danger:#c81e1e; --dangerbg:#fdecec;
+  --info:#475569; --infobg:#eef1f6;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 24px -14px rgba(16,24,40,.32);
+  --r:16px;
+}
+@media (prefers-color-scheme:dark){
+ :root{
+  --bg:#0c0f16; --card:#161b26; --card2:#121620; --fg:#eef1f8; --muted:#a8b1c4; --line:#2a3244;
+  --accent:#93c5fd; --accent2:#67e8f9; --afg:#0b1b3a;
+  --ok:#34d399; --okbg:#0f2a22; --warn:#fbbf24; --warnbg:#2a2110; --danger:#f87171; --dangerbg:#2c1414;
+  --info:#c3ccd8; --infobg:#1f242e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -16px rgba(0,0,0,.8);
+ }
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);line-height:1.55;word-break:keep-all;overflow-wrap:anywhere;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+  -webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1180px;margin:0 auto;padding:0 14px calc(70px + env(safe-area-inset-bottom))}
+.hide{display:none !important}
+.nw{white-space:nowrap}
+
+/* ── 인앱 브라우저 안내 띠 ── 앱 안 WebView 는 파일을 내려받지 못한다 */
+.iabar{display:none;align-items:center;gap:10px;margin:10px 0 0;padding:11px 12px;border-radius:12px;
+  background:var(--warnbg);border:1px solid color-mix(in srgb,var(--warn) 34%,transparent);line-height:1.5}
+body.inapp .iabar{display:flex}
+.iabar .ia-t{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:700;color:var(--fg)}
+.iabar .ia-t small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.iabar .ia-go{flex:0 0 auto;font:inherit;font-size:12.5px;font-weight:800;color:#fff;border:0;border-radius:999px;
+  padding:9px 14px;min-height:38px;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+@media (prefers-color-scheme:dark){.iabar .ia-go{color:var(--afg)}}
+/* 닫기는 휴대폰에서 누르기 쉽게 36px(터치 대상 최소) */
+.iabar .ia-x{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;
+  color:var(--muted);font:inherit;font-size:12px;line-height:1;cursor:pointer}
+/* ── 앱 안에서 열었을 때 막는 창 ── 토스트(z-index 99)보다는 아래에 둔다 */
+.iamodal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:18px;
+  background:rgba(8,14,20,.72);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+body.ia-lock{overflow:hidden}
+body.ia-lock .iamodal{display:flex}
+body.ia-lock .wrap{pointer-events:none}
+.iasheet{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  width:100%;max-width:420px;max-height:92vh;overflow:auto;padding:22px 18px 16px;text-align:center}
+.iasheet .iaic{font-size:34px;line-height:1;margin-bottom:10px}
+.iasheet h2{font-size:17.5px;font-weight:800;letter-spacing:-.02em;margin:0 0 10px;line-height:1.45}
+.iap{font-size:13.5px;font-weight:600;color:var(--muted);line-height:1.7;margin:0 0 14px}
+.iap b{color:var(--fg);font-weight:800}
+.iasteps{text-align:left;margin:0 0 16px;padding:12px 14px 12px 32px;border-radius:12px;background:var(--card2);
+  font-size:13px;font-weight:600;color:var(--muted);line-height:1.7}
+.iasteps li+li{margin-top:5px}
+.iasteps b{color:var(--fg);font-weight:800}
+.iabtn{display:block;width:100%;font:inherit;font-size:15px;font-weight:800;color:#fff;border:0;border-radius:12px;
+  padding:14px;min-height:52px;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:var(--shadow)}
+@media (prefers-color-scheme:dark){.iabtn{color:var(--afg)}}
+.iafine{margin:12px 0 0;font-size:12px;font-weight:600;color:var(--muted);line-height:1.6}
+.iafine button{font:inherit;font-size:12px;font-weight:700;color:var(--muted);background:none;border:0;padding:6px 8px;
+  text-decoration:underline;cursor:pointer;min-height:36px}
+.dwarn{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--warnbg);font-size:12.5px;font-weight:700;line-height:1.6}
+/* 문장 속 단추라 줄 높이는 그대로 두고(음수 여백) 누르는 면만 넓힌다 */
+.dwarn button{font:inherit;font-size:12.5px;font-weight:800;color:var(--accent);background:none;border:0;padding:9px 2px;margin:-9px 0;
+  text-decoration:underline;cursor:pointer}
+
+/* ── 저장 완료 카드 ── 화면을 덮지 않고 본문 흐름 안에 펼친다 */
+#doneCard{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.dmsg{margin:0 0 10px;font-size:14px;font-weight:700;line-height:1.6}
+.dsteps{margin:0;padding:0 0 0 20px;font-size:13px;font-weight:600;line-height:1.75;color:var(--muted)}
+.dsteps b{color:var(--fg);font-weight:800}
+
+header{text-align:center;padding:14px 0 2px}
+.logo{display:inline-flex;align-items:center;gap:9px;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.logo .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--shadow)}
+.tag{font-size:14.5px;font-weight:600;color:var(--muted);margin:8px 0 0;text-wrap:balance}
+.tag b{color:var(--fg)}
+.badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.badge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--okbg);color:var(--ok);border:1px solid transparent}
+.badge.gray{background:var(--card2);color:var(--muted);border-color:var(--line)}
+
+.toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+
+/* ── 두 칸 배치 · 넓은 화면에서 미리보기를 옆에 붙인다 ── */
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px}
+@media (min-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr) 430px;align-items:start}
+  /* 미리보기 높이를 화면에 맞춰 줄여 「PDF로 저장」이 화면 안에 남게 한다.
+     옆 칸은 화면 높이 안에서 따로 스크롤한다 — sticky 만 두면 옆 칸이 화면보다 길 때
+     맨 위에서 저장했을 때 펼쳐지는 완료 카드가 화면 아래로 빠진다 */
+  .side{position:sticky;top:8px;max-height:100vh;overflow:auto;padding-bottom:10px;scrollbar-width:thin}
+  .side .pv-pages{max-height:calc(100vh - 480px);min-height:320px;overflow:auto}
+}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-top:14px}
+.card h2{font-size:12px;font-weight:800;color:var(--muted);margin:0 0 12px;letter-spacing:.07em;
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card h2 .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;margin-right:6px;
+  background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);letter-spacing:0;font-size:11.5px}
+.card h2 .opt{font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;letter-spacing:.02em}
+
+/* ── 폼 ── */
+.row{margin-top:14px}
+.lab{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13.5px;font-weight:800;margin-bottom:7px}
+.lab .hint{font-weight:500;color:var(--muted);font-size:12px;text-align:right}
+.lab>span:first-child{flex:0 0 auto}
+input[type=text],input[type=tel],input[type=date],input[type=time],select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--card2);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:46px;width:100%;min-width:0}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block}
+input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--muted) 70%,transparent)}
+textarea{resize:vertical;line-height:1.6}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.grid2{display:flex;gap:10px;flex-wrap:wrap}
+.grid2>div{flex:1 1 180px;min-width:0}
+.grid2>div.wide{flex:2 1 240px}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button,.rgrid button,.tgrid button{flex:1 1 0;border:1px solid var(--line);background:var(--card2);color:var(--muted);font:inherit;
+  font-size:13.5px;font-weight:800;padding:9px 8px;border-radius:10px;cursor:pointer;min-height:46px;transition:.15s;min-width:72px}
+.seg button:hover,.rgrid button:hover,.tgrid button:hover{border-color:var(--accent)}
+.seg button.on,.rgrid button.on,.tgrid button.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.seg button .s,.rgrid button .s,.tgrid button .s{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:1px;line-height:1.4}
+.seg button.on .s,.rgrid button.on .s,.tgrid button.on .s{color:var(--accent)}
+.rgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.rgrid button{min-width:0;padding:8px 6px}
+@media (min-width:600px){.rgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* 문서 종류 — 휴대폰 2칸, 넓으면 4칸 */
+.tgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.tgrid button{min-width:0;padding:11px 10px;text-align:left;min-height:64px}
+.tgrid button b{display:block;font-size:14.5px;font-weight:800;color:var(--fg)}
+.tgrid button.on b{color:var(--accent)}
+@media (min-width:600px){.tgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.rinfo{margin-top:10px;border-radius:11px;padding:9px 11px 9px 12px;font-size:12.5px;font-weight:700;line-height:1.65;border-left:3px solid}
+.rinfo:empty{display:none}
+.rinfo.ok{background:var(--okbg);color:var(--ok)}
+.rinfo.warn{background:var(--warnbg);color:var(--warn)}
+.rinfo.info{background:var(--infobg);color:var(--info)}
+.chk{display:flex;align-items:flex-start;gap:9px;font-size:14px;font-weight:700;cursor:pointer;padding:8px 0;margin-top:4px}
+.chk input{width:20px;height:20px;accent-color:var(--accent);flex:0 0 auto;margin:2px 0 0}
+.chk .d{display:block;font-size:12.5px;font-weight:600;color:var(--muted);line-height:1.6;margin-top:1px}
+.unit{display:flex;gap:8px;align-items:center}
+.unit input{flex:1 1 auto}
+.unit span{flex:0 0 auto;font-size:14px;font-weight:800;color:var(--muted)}
+.unit.short input{flex:0 1 90px;text-align:center}
+.sub{border-left:3px solid color-mix(in srgb,var(--accent) 30%,transparent);padding-left:12px;margin-left:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips:empty{display:none}
+.chips button{border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;
+  padding:6px 11px;border-radius:999px;cursor:pointer;min-height:38px;text-align:left}
+.chips button:hover{border-color:var(--accent);color:var(--accent)}
+.chips button.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.party{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--card2)}
+.party.first{margin-top:0}
+.party .grid2{margin-top:8px}
+.party .grid2:first-of-type{margin-top:0}
+.party input,.party textarea{background:var(--card)}
+.ph{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;margin-bottom:9px}
+.ph em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;background:var(--card)}
+.fine{font-size:12px;font-weight:600;color:var(--muted);line-height:1.65;margin:9px 0 0}
+.fine b{color:var(--fg)}
+.cnote{font-size:12px;font-weight:700;color:var(--accent);margin:7px 0 0;line-height:1.6}
+.cnote:empty{display:none}
+
+.mini{border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-size:13px;font-weight:700;
+  padding:9px 14px;border-radius:999px;cursor:pointer;min-height:42px;transition:.15s}
+.mini:hover{border-color:var(--accent)}
+.btn{flex:1 1 130px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font:inherit;font-size:14px;font-weight:800;
+  padding:11px 12px;border-radius:12px;cursor:pointer;min-height:48px;transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:progress}
+.btn.pri{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:var(--shadow)}
+@media (prefers-color-scheme:dark){.btn.pri{color:var(--afg)}}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions .btn.pri{flex-basis:100%}
+
+/* ── 결과 카드 ── */
+.pv h2 .pvinfo{letter-spacing:.02em;font-weight:700}
+.pv-pages{display:flex;flex-direction:column;gap:12px;background:color-mix(in srgb,var(--muted) 14%,var(--card2));border-radius:12px;padding:12px;
+  border:1px solid var(--line)}
+.pv-pages canvas{display:block;width:100%;height:auto;background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.18),0 6px 18px -10px rgba(0,0,0,.35);cursor:zoom-in}
+
+/* ── 점검 ── */
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.checks li{position:relative;border-radius:11px;padding:9px 11px 9px 34px;font-size:12.5px;font-weight:600;line-height:1.65}
+.checks li b{font-weight:800}
+.checks li::before{position:absolute;left:10px;top:9px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;
+  font-size:10.5px;font-weight:900;line-height:1}
+.checks li.ok{background:var(--okbg);color:var(--ok)}
+.checks li.ok::before{content:"✓";background:var(--ok);color:var(--okbg)}
+.checks li.info{background:var(--infobg);color:var(--info)}
+.checks li.info::before{content:"i";background:var(--info);color:var(--infobg)}
+.checks li.warn{background:var(--warnbg);color:var(--warn)}
+.checks li.warn::before{content:"!";background:var(--warn);color:var(--warnbg)}
+.checks li.bad{background:var(--dangerbg);color:var(--danger)}
+.checks li.bad::before{content:"✕";background:var(--danger);color:var(--dangerbg)}
+
+/* ── 안내 ── */
+.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+.steps li{position:relative;padding-left:32px;margin-bottom:12px;font-size:14px;font-weight:600;line-height:1.7;counter-increment:st}
+.steps li:last-child{margin-bottom:0}
+.steps li::before{content:counter(st);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+  font-size:12px;font-weight:800;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.steps li b{font-weight:800}
+.steps li .d{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.tbw{overflow-x:auto;margin:0 -2px;-webkit-overflow-scrolling:touch}
+table.kt{width:100%;min-width:560px;border-collapse:collapse;font-size:13px;line-height:1.6}
+table.kt th,table.kt td{border:1px solid var(--line);padding:9px 10px;vertical-align:top;text-align:left}
+table.kt th{background:var(--card2);font-weight:800;white-space:nowrap}
+table.kt td b{font-weight:800}
+table.kt td.k{font-weight:800;white-space:nowrap}
+.tnote{font-size:12px;font-weight:600;color:var(--muted);line-height:1.7;margin:10px 0 0}
+details{border-top:1px solid var(--line);padding:12px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none;padding:10px 0;margin:-10px 0}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋ ";color:var(--accent);font-weight:800}
+details[open] summary::before{content:"－ "}
+details p{margin:8px 0 0;font-size:13.5px;color:var(--muted);line-height:1.8}
+details p b{color:var(--fg)}
+
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;line-height:1.8}
+footer b{color:var(--fg)}
+footer a{color:inherit}
+
+/* ══ 주의 문구 ══ */
+.nbx{border:1px solid var(--warn);border-radius:14px;background:var(--warnbg);padding:14px 15px;margin-top:14px}
+.nbx-h{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;color:var(--warn);margin:0 0 10px}
+.nbx-h .ic{flex:0 0 auto;width:19px;height:19px;border-radius:6px;background:var(--warn);color:var(--warnbg);
+  font-size:12px;font-weight:800;display:grid;place-items:center;line-height:1}
+.nbx ul{list-style:none;margin:0;padding:0}
+.nbx li{position:relative;padding-left:12px;margin-bottom:7px;font-size:12px;font-weight:600;line-height:1.68;color:var(--warn)}
+.nbx li:last-child{margin-bottom:0}
+.nbx li::before{content:"·";position:absolute;left:1px;top:-1px;font-weight:800}
+.nbx li b{font-weight:800}
+.nbx .nbx-f{margin:11px 0 0;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--warn) 32%,transparent);
+  font-size:12px;font-weight:700;line-height:1.72;color:var(--warn)}
+.nbx .nbx-f b{font-weight:800}
+
+/* ── 모바일 하단 바 ── */
+#mbar{position:fixed;left:0;right:0;bottom:0;z-index:50;transform:translateY(115%);transition:transform .22s;
+  background:var(--card);border-top:1px solid var(--line);box-shadow:0 -8px 22px -14px rgba(0,0,0,.55);
+  padding:9px 14px calc(9px + env(safe-area-inset-bottom))}
+#mbar.on{transform:none}
+#mbar .in{max-width:700px;margin:0 auto;display:flex;align-items:center;gap:10px}
+#mbar .k{flex:1 1 auto;min-width:0;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.03em}
+#mbar .k b{display:block;font-size:13.5px;font-weight:800;color:var(--fg);letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mbar .go{flex:0 0 auto;font:inherit;font-size:13px;font-weight:800;color:#fff;padding:10px 15px;border-radius:999px;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));min-height:42px}
+@media (prefers-color-scheme:dark){#mbar .go{color:var(--afg)}}
+@media (min-width:980px){#mbar{display:none}}
+
+#toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#151b2b;color:#fff;font-size:13.5px;font-weight:700;line-height:1.5;
+  padding:10px 16px;border-radius:14px;width:max-content;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:92vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-color-scheme:dark){#toast{background:#e8edf8;color:#0b1430}}
+
+@media (max-width:430px){
+  .lab{flex-direction:column;align-items:stretch;gap:2px}
+  .lab .hint{text-align:left}
+  .card{padding:14px}
+  .seg button{font-size:13px;min-width:0}
+  .rgrid button{font-size:13px}
+  .tag{font-size:14px}
+  .rsbox{padding-left:0}
+  .tgrid button b{font-size:14px}
+}
+/* ══════════ 영문 이름 변환기 전용 ══════════ */
+.gp{font-size:13.5px;font-weight:600;color:var(--muted);line-height:1.75;margin:10px 0 0}
+.gp b{color:var(--fg);font-weight:800}
+.row.first{margin-top:0}
+.seg.sm button{min-height:42px;font-size:12.5px;padding:6px 4px;min-width:0}
+#inName{font-size:22px;font-weight:800;letter-spacing:.02em;padding:12px 14px}
+
+/* ── 탭 ── 두 칸 */
+.modebar{margin-top:14px}
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:var(--shadow)}
+.tabs button{border:1px solid transparent;background:transparent;color:var(--muted);font:inherit;font-size:14.5px;font-weight:800;
+  padding:10px 4px;border-radius:12px;cursor:pointer;min-height:52px;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.tabs button .i{font-size:19px;line-height:1}
+.tabs button:hover{border-color:var(--accent)}
+.tabs button.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--card))}
+
+/* ── 예시 ── */
+.ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.ex span{font-size:12px;font-weight:800;color:var(--muted);margin-right:2px}
+.ex button{border:1px solid var(--line);background:var(--card2);color:var(--fg);font:inherit;font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px;cursor:pointer;min-height:36px}
+.ex button:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── 결과 ── */
+#resCard{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.big{border-radius:16px;background:color-mix(in srgb,var(--accent) 7%,var(--card2));border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));padding:16px 14px;text-align:center}
+.big b{display:block;font-size:30px;font-weight:900;letter-spacing:.04em;line-height:1.25;color:var(--accent);word-break:break-word}
+.big span{display:block;font-size:15px;font-weight:700;color:var(--muted);margin-top:4px}
+.big.ex b{opacity:.45}
+.chips.pick button{min-height:42px;font-size:14.5px;font-weight:800;padding:7px 13px;display:inline-flex;align-items:center;gap:6px;color:var(--fg)}
+.chips.pick button small{font-size:10.5px;font-weight:800;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 6px;line-height:16px}
+.chips.pick button.on{color:var(--accent)}
+.chips.pick button.on small{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.hyrow{display:flex;align-items:center;gap:10px;margin-top:10px}
+.hyrow>span{flex:0 0 auto;font-size:12.5px;font-weight:800;color:var(--muted)}
+.hyrow .seg{flex:1 1 auto}
+.chk2{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.chk2:empty{display:none}
+.chk2 li{font-size:13px;font-weight:600;line-height:1.65;padding:9px 12px 9px 34px;border-radius:12px;position:relative}
+.chk2 li::before{position:absolute;left:12px;top:9px;font-weight:900}
+.chk2 li.ok{background:var(--okbg);color:var(--ok)} .chk2 li.ok::before{content:"✓"}
+.chk2 li.warn{background:var(--warnbg);color:var(--warn)} .chk2 li.warn::before{content:"!"}
+.chk2 li.bad{background:var(--dangerbg);color:var(--danger)} .chk2 li.bad::before{content:"✕"}
+.chk2 li.info{background:var(--infobg);color:var(--info)} .chk2 li.info::before{content:"i"}
+
+/* ── 형식 ── */
+.fmt{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.fmt button{width:100%;border:1px solid var(--line);background:var(--card2);color:var(--fg);font:inherit;text-align:left;padding:10px 44px 10px 12px;border-radius:12px;cursor:pointer;min-height:56px;position:relative;display:block}
+.fmt button:hover{border-color:var(--accent)}
+.fmt .fl{display:block;font-size:11.5px;font-weight:800;color:var(--muted)}
+.fmt b{display:block;font-size:17px;font-weight:900;letter-spacing:.01em;margin-top:1px;word-break:break-word}
+.fmt small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:1px}
+.fmt i{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;font-size:17px;opacity:.7}
+.fmt li.empty{font-size:13px;font-weight:600;color:var(--muted);line-height:1.7}
+
+/* ── 글자별 ── */
+.syl{display:flex;flex-direction:column;gap:6px}
+.sy{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;background:var(--card2);padding:8px 10px}
+.sy.s{border-color:color-mix(in srgb,var(--accent2) 35%,var(--line))}
+.sy .c{flex:0 0 44px;font-size:24px;font-weight:900;text-align:center;line-height:1.1}
+.sy .c em{display:block;font-style:normal;font-size:10px;font-weight:800;color:var(--muted);margin-top:2px;min-height:12px}
+.sy .j{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:13px;font-weight:800}
+.sy .j span{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;background:var(--card);border:1px solid var(--line)}
+.sy .j i{font-style:normal;color:var(--muted);font-weight:700}
+.sy .j u{text-decoration:none;color:var(--muted);font-weight:600}
+.sy>b{flex:0 0 auto;font-size:17px;font-weight:900;color:var(--accent)}
+.tips{margin:0;padding-left:18px;font-size:13px;font-weight:600;line-height:1.7}
+.tips li{margin-bottom:6px}
+.tips b{font-weight:800}
+
+/* ── 여러 명 ── */
+#inMany{font-size:16px}
+table.kt.mt{min-width:0;margin-top:14px}
+table.kt.mt td{vertical-align:middle}
+table.kt.mt tbody tr[data-k]{cursor:pointer}
+table.kt.mt tbody tr[data-k]:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+table.kt.mt td.n{color:var(--muted);width:32px;text-align:right}
+table.kt.mt td.en{font-weight:900;color:var(--accent);letter-spacing:.02em}
+table.kt.mt td.w span{display:inline-block;font-size:11px;font-weight:800;color:var(--warn);white-space:nowrap}
+table.kt.mt td.w span.i{color:var(--info)}
+table.kt.mt td.w .okk{color:var(--ok)}
+table.kt.mt td.emp{color:var(--muted);text-align:center;padding:18px 10px}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* ── 정적 표 ── */
+table.kt.rt{min-width:0;text-align:center}
+table.kt.rt th,table.kt.rt td{text-align:center;padding:7px 4px}
+table.kt.rt td.k{text-align:left}
+.st2{display:grid;grid-template-columns:minmax(0,1fr);gap:0 12px}
+@media (min-width:700px){.st2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+table.kt.st{min-width:0}
+table.kt.al{min-width:0}
+table.kt.al td:first-child{white-space:normal}
+table.kt.st td{padding:6px 10px}
+#guide h3{font-size:15px;font-weight:800;margin:20px 0 10px}
+
+#mbar .k b{color:var(--accent);letter-spacing:.03em}
+
+@media (max-width:430px){
+  .big b{font-size:24px}
+  #inName{font-size:20px}
+  table.kt.mt{font-size:12px}
+  table.kt.mt th,table.kt.mt td{padding:7px 5px}
+  table.kt.mt th:nth-child(4),table.kt.mt td:nth-child(4),table.kt.mt th:nth-child(5),table.kt.mt td:nth-child(5){display:none}
+  table.kt.rt{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- 네이버·카카오 앱 안에서 열렸을 때만 보이는 띠 (body.inapp) -->
+<div class="iabar" id="iabar">
+  <div class="ia-t"><span id="iaMsg">앱 안에서는 파일 저장이 안 될 수 있어요.</span>
+    <small id="iaSub">이름 변환·복사는 그대로 됩니다.</small></div>
+  <button class="ia-go" id="iaGo" type="button">크롬에서 열기</button>
+  <button class="ia-x" id="iaX" type="button" aria-label="안내 닫기">✕</button>
+</div>
+
+<header>
+  <div class="logo"><span class="ico">🔤</span><span>영문 이름 변환기</span></div>
+  <p class="tag"><b>한글 이름을 영어로</b> · <span class="nw">여권 영문 이름</span> · <span class="nw">로마자 표기법</span> · <span class="nw">영문 명함</span> · <span class="nw">명단 한꺼번에</span></p>
+  <div class="badges">
+    <span class="badge">🔤 로마자 표기법 변환</span>
+    <span class="badge gray">성씨 91개 철자</span>
+    <span class="badge gray">다른 철자 후보</span>
+    <span class="badge gray">여권 · 항공권 · 명함 형식</span>
+    <span class="badge gray">무료 · 설치·가입 없음</span>
+  </div>
+</header>
+
+<nav class="modebar" aria-label="변환 방법">
+  <div class="tabs" role="tablist" data-seg="mode">
+    <button type="button" role="tab" data-v="one" class="on"><span class="i">🔤</span>이름 하나</button>
+    <button type="button" role="tab" data-v="many"><span class="i">📋</span>여러 명 한꺼번에</button>
+  </div>
+</nav>
+
+<div class="layout">
+<main id="main">
+  <!-- 🔤 이름 하나 -->
+  <section class="card pane" id="pOne">
+    <h2><span>한글 이름 넣기</span><span class="opt">성과 이름 함께</span></h2>
+    <div class="row first">
+      <div class="lab"><span>한글 이름</span><span class="hint">예: 홍길동 · 남궁민 · 김 철수</span></div>
+      <input type="text" id="inName" autocomplete="off" spellcheck="false" maxlength="20" placeholder="홍길동" enterkeyhint="done">
+    </div>
+    <div class="row">
+      <div class="lab"><span>성은 몇 글자?</span><span class="hint" id="splitHint"></span></div>
+      <div class="seg" data-seg="split">
+        <button type="button" data-v="auto" class="on">알아서</button>
+        <button type="button" data-v="1">한 글자</button>
+        <button type="button" data-v="2">두 글자</button>
+      </div>
+    </div>
+    <div class="ex" id="exChips"><span>예시</span>
+      <button type="button" data-n="홍길동">홍길동</button><button type="button" data-n="김정은">김정은</button><button type="button" data-n="이경희">이경희</button><button type="button" data-n="박석우">박석우</button><button type="button" data-n="최하은">최하은</button><button type="button" data-n="남궁민">남궁민</button>
+    </div>
+  </section>
+
+  <section class="card pane1" id="resCard">
+    <h2><span>영문 이름</span><button class="mini" id="btnCopyMain" type="button">📋 복사</button></h2>
+    <div class="big" id="bigOut" aria-live="polite"><b id="bigPass">HONG GILDONG</b><span id="bigNorm">Hong Gildong</span></div>
+    <div class="row">
+      <div class="lab"><span>성 철자</span><span class="hint" id="surHint"></span></div>
+      <div class="chips pick" id="surChips"></div>
+    </div>
+    <div class="row">
+      <div class="lab"><span>이름 철자</span><span class="hint">앞일수록 표기법에 가까워요</span></div>
+      <div class="chips pick" id="givChips"></div>
+      <div class="hyrow"><span>음절 사이</span>
+        <div class="seg sm" data-seg="hy">
+          <button type="button" data-v="0" class="on">붙여 쓰기</button>
+          <button type="button" data-v="1">붙임표(-)</button>
+        </div>
+      </div>
+    </div>
+    <ul class="chk2" id="checks"></ul>
+  </section>
+
+  <section class="card pane1" id="fmtCard">
+    <h2><span>쓰는 곳마다 이렇게</span><span class="opt">누르면 복사</span></h2>
+    <ul class="fmt" id="fmtList"></ul>
+    <p class="fine">항공권 이름은 <b>여권과 한 글자도 다르면 안 돼요</b>. 여권이 있다면 여권에 적힌 철자를 그대로 쓰세요.</p>
+  </section>
+
+  <!-- 📋 여러 명 -->
+  <section class="card pane hide" id="pMany">
+    <h2><span>여러 명 한꺼번에</span><span class="opt" id="manyInfo"></span></h2>
+    <div class="row first">
+      <div class="lab"><span>한글 이름 목록</span><span class="hint">한 줄에 한 명 · 쉼표로 나눠도 돼요</span></div>
+      <textarea id="inMany" rows="7" spellcheck="false" placeholder="홍길동&#10;김철수&#10;이영희&#10;남궁민"></textarea>
+    </div>
+    <div class="row">
+      <div class="lab"><span>성 철자</span></div>
+      <div class="seg sm" data-seg="msur">
+        <button type="button" data-v="pop" class="on">흔히 보이는 철자<span class="s">Kim · Lee · Park</span></button>
+        <button type="button" data-v="rr">표기법 그대로<span class="s">Gim · I · Bak</span></button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="lab"><span>모양</span></div>
+      <div class="seg sm" data-seg="mcase">
+        <button type="button" data-v="up" class="on">여권식<span class="s">HONG GILDONG</span></button>
+        <button type="button" data-v="cap">첫 글자만<span class="s">Hong Gildong</span></button>
+        <button type="button" data-v="rev">이름 먼저<span class="s">Gildong Hong</span></button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="lab"><span>음절 사이</span></div>
+      <div class="seg sm" data-seg="mhy">
+        <button type="button" data-v="0" class="on">붙여 쓰기</button>
+        <button type="button" data-v="1">붙임표(-)</button>
+      </div>
+    </div>
+    <div class="tbw"><table class="kt mt" id="manyTab"><thead><tr><th>#</th><th>한글</th><th>영문</th><th>성</th><th>이름</th><th>확인</th></tr></thead><tbody></tbody></table></div>
+    <div class="actions">
+      <button class="btn pri" id="btnTsv" type="button">📋 표 복사 (엑셀에 붙여 넣기)</button>
+      <button class="btn" id="btnCsv" type="button">💾 CSV 저장</button>
+    </div>
+    <p class="fine">성 철자는 사람마다 다를 수 있어요. 여권이 있는 사람은 여권 철자로 고쳐 쓰세요. 줄을 누르면 그 사람의 철자 후보를 자세히 볼 수 있어요.</p>
+  </section>
+</main>
+
+<aside id="side">
+  <section class="card" id="sylCard">
+    <h2><span>글자별로 보기</span><span class="opt">왜 이 철자인지</span></h2>
+    <div class="syl" id="sylList"></div>
+    <p class="fine" id="sylNote">로마자 표기법은 <b>글자마다</b> 옮겨요. 이름에서는 「한복남 → Han Boknam」처럼 소리가 바뀌어도 바뀐 소리를 적지 않아요. ㄹㄹ만 ll로 적어요.</p>
+  </section>
+  <section class="card" id="tipCard">
+    <h2><span>철자 고르기 전에</span></h2>
+    <ul class="tips">
+      <li><b>여권이 이미 있다면</b> 여권 철자가 정답이에요. 명함·이메일·항공권 모두 그 철자에 맞추세요.</li>
+      <li><b>가족 성은 맞추기</b> — 부모·형제의 여권 성 철자와 같게 쓰는 경우가 많아요.</li>
+      <li><b>한 번 정하면 오래 써요</b> — 여권 영문 이름은 나중에 바꾸기 까다로워요. 소리 내어 읽어 보고 정하세요.</li>
+    </ul>
+  </section>
+</aside>
+</div>
+
+<section class="card hide" id="doneCard">
+  <h2><span>저장했습니다</span><button class="mini" id="doneHide" type="button">닫기</button></h2>
+  <p class="dmsg" id="doneMsg"></p>
+  <ol class="dsteps" id="doneSteps"></ol>
+  <p class="dwarn hide" id="doneInapp">파일이 안 보이면 앱 안 브라우저라서 그래요. <button type="button" id="doneGo">크롬에서 열기</button></p>
+</section>
+
+<section class="card" id="guide">
+  <h2><span>한글 이름 로마자 표기, 이것만 알면 돼요</span></h2>
+  <ol class="steps">
+    <li><b>성과 이름은 띄어 써요</b> — 「Hong Gildong」. 여권은 대문자로 「HONG GILDONG」이라 적어요.</li>
+    <li><b>이름은 붙여 쓰는 게 원칙</b> — 「Gildong」. 음절 사이에 붙임표를 넣은 「Gil-dong」도 허용돼요.</li>
+    <li><b>소리가 바뀌어도 글자대로</b> — 「복남」은 [봉남]으로 소리 나도 Boknam, 「정민」은 Jeongmin으로 적어요. 다만 ㄹㄹ은 ll이에요(「설리」는 Seolli).</li>
+    <li><b>성은 따로 정해진 철자가 없어요</b> — 표기법대로면 김은 Gim, 이는 I, 박은 Bak이지만 실제로는 Kim·Lee·Park처럼 오래 써 온 철자가 훨씬 흔해요. 그래서 성 철자는 고를 수 있게 했어요.</li>
+    <li><b>받침 뒤 ㅇ은 붙임표가 도움이 돼요</b> — 「석우」를 Seoku로 붙이면 「서쿠」처럼 읽히기 쉬워요. Seok-u로 쓰면 글자 경계가 보여요.</li>
+  </ol>
+  <h3>자음 · 모음 로마자 표</h3>
+  <div class="tbw"><table class="kt rt">
+    <thead><tr><th>자음</th><th>ㄱ</th><th>ㄲ</th><th>ㄴ</th><th>ㄷ</th><th>ㄸ</th><th>ㄹ</th><th>ㅁ</th><th>ㅂ</th><th>ㅃ</th><th>ㅅ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">첫소리</td><td>g</td><td>kk</td><td>n</td><td>d</td><td>tt</td><td>r</td><td>m</td><td>b</td><td>pp</td><td>s</td></tr>
+      <tr><td class="k">받침</td><td>k</td><td>k</td><td>n</td><td>t</td><td>-</td><td>l</td><td>m</td><td>p</td><td>-</td><td>t</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tbw"><table class="kt rt">
+    <thead><tr><th>자음</th><th>ㅆ</th><th>ㅇ</th><th>ㅈ</th><th>ㅉ</th><th>ㅊ</th><th>ㅋ</th><th>ㅌ</th><th>ㅍ</th><th>ㅎ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">첫소리</td><td>ss</td><td>(없음)</td><td>j</td><td>jj</td><td>ch</td><td>k</td><td>t</td><td>p</td><td>h</td></tr>
+      <tr><td class="k">받침</td><td>t</td><td>ng</td><td>t</td><td>-</td><td>t</td><td>k</td><td>t</td><td>p</td><td>t</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tbw"><table class="kt rt">
+    <thead><tr><th>모음</th><th>ㅏ</th><th>ㅐ</th><th>ㅑ</th><th>ㅒ</th><th>ㅓ</th><th>ㅔ</th><th>ㅕ</th><th>ㅖ</th><th>ㅗ</th><th>ㅘ</th><th>ㅙ</th></tr></thead>
+    <tbody><tr><td class="k">로마자</td><td>a</td><td>ae</td><td>ya</td><td>yae</td><td>eo</td><td>e</td><td>yeo</td><td>ye</td><td>o</td><td>wa</td><td>wae</td></tr></tbody>
+  </table></div>
+  <div class="tbw"><table class="kt rt">
+    <thead><tr><th>모음</th><th>ㅚ</th><th>ㅛ</th><th>ㅜ</th><th>ㅝ</th><th>ㅞ</th><th>ㅟ</th><th>ㅠ</th><th>ㅡ</th><th>ㅢ</th><th>ㅣ</th></tr></thead>
+    <tbody><tr><td class="k">로마자</td><td>oe</td><td>yo</td><td>u</td><td>wo</td><td>we</td><td>wi</td><td>yu</td><td>eu</td><td>ui</td><td>i</td></tr></tbody>
+  </table></div>
+  <p class="tnote">ㄱ·ㄷ·ㅂ은 모음 앞에서 g·d·b, 받침에서 k·t·p로 적어요. ㄹ은 모음 앞에서 r, 받침에서 l이에요. 「ㅢ」는 소리가 [ㅣ]로 나도 ui로 적어요(희 Hui).</p>
+
+  <h3>흔히 쓰는 다른 철자</h3>
+  <div class="tbw"><table class="kt al">
+    <thead><tr><th>글자</th><th>표기법</th><th>흔히 보이는 다른 철자</th><th>예</th></tr></thead>
+    <tbody>
+      <tr><td class="k">ㅓ</td><td>eo</td><td>u</td><td>정 Jeong → Jung, 성 Seong → Sung, 석 Seok → Suk</td></tr>
+      <tr><td class="k">ㅕ</td><td>yeo</td><td>yu · you</td><td>현 Hyeon → Hyun, 영 Yeong → Young, 경 Gyeong → Kyung</td></tr>
+      <tr><td class="k">ㅜ</td><td>u</td><td>oo · woo</td><td>준 Jun → Joon, 우 U → Woo</td></tr>
+      <tr><td class="k">ㅠ</td><td>yu</td><td>yoo</td><td>윤 Yun → Yoon, 유 Yu → Yoo</td></tr>
+      <tr><td class="k">ㅢ</td><td>ui</td><td>ee</td><td>희 Hui → Hee</td></tr>
+      <tr><td class="k">ㄱ(첫소리)</td><td>g</td><td>k</td><td>경 → Kyung, 길 → Kil</td></tr>
+      <tr><td class="k">시·신</td><td>si·sin</td><td>shi·shin</td><td>신 Sin → Shin, 시 Si → Shi</td></tr>
+    </tbody>
+  </table></div>
+  <p class="tnote">다른 철자는 틀린 것이 아니라 「영어 사용자가 더 비슷하게 읽는 쪽」으로 오래 써 온 습관이에요. 어느 쪽이 맞다고 정해진 것은 없으니, 이미 쓰고 있는 철자와 가족 철자를 먼저 따르세요.</p>
+</section>
+
+<section class="card" id="surTab">
+  <h2><span>성씨 영문 철자 표</span><span class="opt">91개</span></h2>
+  <p class="gp" style="margin-top:0">여권·명함에서 흔히 보이는 철자를 모았어요. 앞에 적힌 것일수록 흔히 보이는 쪽이에요. 같은 성이라도 집안마다 다르게 쓰니 가족 철자를 먼저 확인하세요.</p>
+  <div class="st2"><div class="tbw"><table class="kt st"><thead><tr><th>성</th><th>흔히 보이는 영문 철자</th></tr></thead><tbody><tr><td class="k">김</td><td>Kim · Gim</td></tr><tr><td class="k">이</td><td>Lee · Yi · Rhee · I</td></tr><tr><td class="k">박</td><td>Park · Pak · Bak</td></tr><tr><td class="k">최</td><td>Choi · Choe</td></tr><tr><td class="k">정</td><td>Jung · Jeong · Chung</td></tr><tr><td class="k">강</td><td>Kang · Gang</td></tr><tr><td class="k">조</td><td>Cho · Jo</td></tr><tr><td class="k">윤</td><td>Yoon · Yun</td></tr><tr><td class="k">장</td><td>Jang · Chang</td></tr><tr><td class="k">임</td><td>Lim · Im · Lym</td></tr><tr><td class="k">한</td><td>Han</td></tr><tr><td class="k">오</td><td>Oh · O</td></tr><tr><td class="k">서</td><td>Seo · Suh</td></tr><tr><td class="k">신</td><td>Shin · Sin</td></tr><tr><td class="k">권</td><td>Kwon · Gwon</td></tr><tr><td class="k">황</td><td>Hwang</td></tr><tr><td class="k">안</td><td>Ahn · An</td></tr><tr><td class="k">송</td><td>Song</td></tr><tr><td class="k">류</td><td>Ryu · Yoo · Yu</td></tr><tr><td class="k">전</td><td>Jeon · Jun · Chun</td></tr><tr><td class="k">홍</td><td>Hong</td></tr><tr><td class="k">고</td><td>Ko · Go · Koh</td></tr><tr><td class="k">문</td><td>Moon · Mun</td></tr><tr><td class="k">양</td><td>Yang</td></tr><tr><td class="k">손</td><td>Son · Sohn</td></tr><tr><td class="k">배</td><td>Bae · Pae</td></tr><tr><td class="k">백</td><td>Baek · Paik · Back</td></tr><tr><td class="k">허</td><td>Heo · Huh · Hur</td></tr><tr><td class="k">유</td><td>Yoo · Yu</td></tr><tr><td class="k">남</td><td>Nam</td></tr><tr><td class="k">심</td><td>Shim · Sim</td></tr><tr><td class="k">노</td><td>Noh · Roh · No</td></tr><tr><td class="k">하</td><td>Ha</td></tr><tr><td class="k">곽</td><td>Kwak · Gwak</td></tr><tr><td class="k">성</td><td>Sung · Seong</td></tr><tr><td class="k">차</td><td>Cha</td></tr><tr><td class="k">주</td><td>Joo · Ju · Chu</td></tr><tr><td class="k">우</td><td>Woo · U</td></tr><tr><td class="k">구</td><td>Koo · Gu · Ku</td></tr><tr><td class="k">민</td><td>Min</td></tr><tr><td class="k">진</td><td>Jin · Chin</td></tr><tr><td class="k">지</td><td>Ji · Chi</td></tr><tr><td class="k">엄</td><td>Um · Eom</td></tr><tr><td class="k">채</td><td>Chae</td></tr><tr><td class="k">원</td><td>Won</td></tr><tr><td class="k">천</td><td>Cheon · Chun</td></tr></tbody></table></div><div class="tbw"><table class="kt st"><thead><tr><th>성</th><th>흔히 보이는 영문 철자</th></tr></thead><tbody><tr><td class="k">방</td><td>Bang</td></tr><tr><td class="k">공</td><td>Kong · Gong</td></tr><tr><td class="k">현</td><td>Hyun · Hyeon</td></tr><tr><td class="k">함</td><td>Ham</td></tr><tr><td class="k">변</td><td>Byun · Byeon</td></tr><tr><td class="k">염</td><td>Yeom · Yum</td></tr><tr><td class="k">여</td><td>Yeo · Yu</td></tr><tr><td class="k">추</td><td>Choo · Chu</td></tr><tr><td class="k">도</td><td>Do · Doh</td></tr><tr><td class="k">소</td><td>So</td></tr><tr><td class="k">석</td><td>Seok · Suk</td></tr><tr><td class="k">선</td><td>Sun · Seon</td></tr><tr><td class="k">설</td><td>Seol · Sul</td></tr><tr><td class="k">마</td><td>Ma</td></tr><tr><td class="k">길</td><td>Gil · Kil</td></tr><tr><td class="k">연</td><td>Yeon · Youn · Yun</td></tr><tr><td class="k">위</td><td>Wi · Wee</td></tr><tr><td class="k">표</td><td>Pyo</td></tr><tr><td class="k">명</td><td>Myung · Myeong</td></tr><tr><td class="k">기</td><td>Ki · Gi</td></tr><tr><td class="k">반</td><td>Ban</td></tr><tr><td class="k">라</td><td>Ra · La</td></tr><tr><td class="k">왕</td><td>Wang</td></tr><tr><td class="k">금</td><td>Keum · Geum · Kum</td></tr><tr><td class="k">옥</td><td>Ok</td></tr><tr><td class="k">육</td><td>Yook · Yuk</td></tr><tr><td class="k">인</td><td>In</td></tr><tr><td class="k">맹</td><td>Maeng</td></tr><tr><td class="k">제</td><td>Je · Jeh</td></tr><tr><td class="k">모</td><td>Mo</td></tr><tr><td class="k">탁</td><td>Tak</td></tr><tr><td class="k">국</td><td>Kook · Guk</td></tr><tr><td class="k">은</td><td>Eun</td></tr><tr><td class="k">편</td><td>Pyun · Pyeon</td></tr><tr><td class="k">용</td><td>Yong</td></tr><tr><td class="k">예</td><td>Ye · Yeh</td></tr><tr><td class="k">경</td><td>Kyung · Gyeong</td></tr><tr><td class="k">봉</td><td>Bong</td></tr><tr><td class="k">나</td><td>Na · Ra</td></tr><tr><td class="k">남궁</td><td>Namgung · Namkoong · Namkung</td></tr><tr><td class="k">황보</td><td>Hwangbo</td></tr><tr><td class="k">제갈</td><td>Jegal · Chegal</td></tr><tr><td class="k">선우</td><td>Sunwoo · Seonu · Sunu</td></tr><tr><td class="k">독고</td><td>Dokgo · Tokko</td></tr><tr><td class="k">사공</td><td>Sagong</td></tr></tbody></table></div></div>
+</section>
+
+<section class="card" id="faq">
+  <h2><span>자주 묻는 질문</span></h2>
+  <details>
+    <summary>한글 이름을 영어로 어떻게 바꾸나요?</summary>
+    <p>위 칸에 한글 이름을 넣으면 바로 바뀌어요. 큰 글씨로 여권식(HONG GILDONG)과 첫 글자만 대문자(Hong Gildong)가 나오고, 아래에서 <b>성 철자</b>와 <b>이름 철자</b>를 골라 바꿀 수 있어요. 고른 철자는 여권·항공권·명함 형식에 그대로 반영돼요.</p>
+  </details>
+  <details>
+    <summary>여권 영문 이름은 이 결과대로 써야 하나요?</summary>
+    <p>여권 영문 이름은 로마자 표기법을 따르는 것이 기본이지만, 이미 쓰고 있는 철자나 가족 철자처럼 다르게 쓸 수 있는 경우가 있어요. 무엇이 되는지는 <b>여권을 신청하는 곳에서 확인</b>하세요. 한 번 정한 여권 영문 이름은 바꾸기 까다로우니 신중하게 고르세요.</p>
+  </details>
+  <details>
+    <summary>김은 Gim인가요, Kim인가요?</summary>
+    <p>표기법대로 글자를 옮기면 Gim이지만, 실제로는 Kim이 훨씬 흔해요. 이(I·Lee·Yi·Rhee), 박(Bak·Park), 최(Choe·Choi)도 마찬가지예요. 성 철자는 정답이 하나가 아니라서 이 도구는 흔히 보이는 철자를 앞에, 표기법 철자를 함께 보여 드려요.</p>
+  </details>
+  <details>
+    <summary>이름 사이에 붙임표(-)를 넣어도 되나요?</summary>
+    <p>네. 표기법은 이름을 붙여 쓰는 것이 원칙이지만 음절 사이에 붙임표를 쓰는 것도 허용해요(Gil-dong). 「석우 Seok-u」처럼 받침 뒤에 ㅇ이 오는 이름은 붙임표가 있으면 읽기 쉬워요. 항공권 예약처럼 붙임표를 받지 않는 곳에서는 빼고 넣으면 돼요.</p>
+  </details>
+  <details>
+    <summary>성이 두 글자인 이름은 어떻게 하나요?</summary>
+    <p>남궁·황보·제갈·선우·독고·사공은 두 글자 성으로 나눌 수 있어요. 다만 「황보람」처럼 「황 보람」일 수도 있는 세 글자 이름은 한 글자 성으로 먼저 나누니, 다르면 <b>성은 몇 글자?</b>에서 바꾸거나 성과 이름 사이를 한 칸 띄어 넣으세요.</p>
+  </details>
+  <details>
+    <summary>명단 여러 명을 한 번에 바꿀 수 있나요?</summary>
+    <p><b>여러 명 한꺼번에</b>에 한 줄에 한 명씩 넣으면 표로 바뀌어요. <b>표 복사</b>를 누르면 엑셀·구글 시트에 그대로 붙여 넣을 수 있고, CSV 파일로 저장할 수도 있어요. 성 철자와 모양(대문자·이름 먼저)은 한꺼번에 정해요.</p>
+  </details>
+  <details>
+    <summary>넣은 이름은 어디로 보내지나요?</summary>
+    <p>어디로도 보내지 않아요. 변환은 모두 <b>이 기기의 브라우저 안에서</b> 이루어지고, 넣은 이름은 저장하지도 않아요. 페이지를 연 뒤에는 인터넷 없이도 동작해요.</p>
+  </details>
+</section>
+
+<!-- ══ 주의 문구 ══ -->
+<div class="nbx">
+  <div class="nbx-h"><span class="ic">!</span><span>쓰기 전에 확인하세요</span></div>
+  <ul>
+    <li>이 도구는 국어의 로마자 표기법(글자 단위)과 흔히 보이는 철자 습관을 바탕으로 <b>후보를 보여 줄 뿐</b>이에요. 여권 발급 기준을 대신하지 않아요.</li>
+    <li>여권·비자·항공권·해외 송금처럼 이름이 정확해야 하는 곳은 <b>이미 쓰고 있는 영문 이름(여권 등)과 똑같이</b> 적으세요. 철자가 다르면 같은 사람으로 보지 않을 수 있어요.</li>
+    <li>성씨 철자 순서는 흔히 보이는 정도를 나타낼 뿐, 통계 수치가 아니에요.</li>
+  </ul>
+  <p class="nbx-f">이 도구는 <b>있는 그대로 제공되며</b>, 결과를 써서 생긴 일에 대해 <b>제작자와 운영자는 법적 책임을 지지 않습니다.</b></p>
+</div>
+
+<footer>
+  <b>영문 이름 변환기</b> · 한글 이름 영어로 · 여권 영문 이름 · 영문 이름 변환 · 로마자 표기법 변환 · 이름 영어 표기 · 성씨 영문 표기<br>
+  함께 보면 좋은 도구: <a href="https://hwj-hub.github.io/signature_maker/" target="_blank" rel="noopener">전자서명 만들기</a> · <a href="https://hwj-hub.github.io/business_card/" target="_blank" rel="noopener">명함 만들기</a> · <a href="https://hwj-hub.github.io/id_photo/" target="_blank" rel="noopener">증명사진 만들기</a> · <a href="https://hwj-hub.github.io/cursive_converter/" target="_blank" rel="noopener">영어 필기체 변환기</a><br>
+  표기 규칙: 국어의 로마자 표기법(문화관광부 고시 제2000-8호) · 성씨 철자는 이 도구가 직접 정리했습니다(2026년 11월)<br>
+  넣은 이름은 어디에도 전송되지 않으며, 페이지를 연 뒤에는 인터넷 없이도 동작합니다 · 외부 라이브러리 없음
+</footer>
+</div>
+
+<!-- 휴대폰 아래 띠 — 결과가 화면 밖에 있을 때 -->
+<div id="mbar" aria-hidden="true">
+  <div class="in">
+    <div class="k">영문 이름<b id="mbN"></b></div>
+    <button class="go" id="mbCopy" type="button">📋 복사</button>
+  </div>
+</div>
+
+<!-- 앱 안(네이버·카카오톡 등) 안내 창 -->
+<div class="iamodal" id="iaModal" role="dialog" aria-modal="true" aria-labelledby="iaTitle">
+  <div class="iasheet">
+    <div class="iaic">📱</div>
+    <h2 id="iaTitle">앱 안에서는 파일이 저장되지 않을 수 있습니다</h2>
+    <p class="iap" id="iaDesc"></p>
+    <ol class="iasteps" id="iaSteps"></ol>
+    <button class="iabtn" id="iaGo2" type="button">크롬에서 열기</button>
+    <p class="iafine"><button type="button" id="iaStay">그냥 볼게요</button></p>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════
+   영문 이름 변환기 — 라이브러리 없이 순수 JS
+   한글 이름을 국어의 로마자 표기법(글자 단위, 소리 바뀜은 적지 않음)으로 옮기고,
+   성씨 91개의 흔히 보이는 철자와 이름 글자별 다른 철자(Jung·Kyung·Shin·Woo 등)를 후보로 보여 준다.
+   여러 명 한꺼번에(표 복사·CSV). 넣은 이름은 이 브라우저 밖으로 보내지 않는다
+   ════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = s => String(s).replace(/[&<>"']/g, c => ESC[c]);
+let toastT = 0;
+function toast(msg, ms) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms || 2600);
+}
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+/* 배경 탭에서도 느려지지 않는 양보(타이머는 배경 탭에서 1초로 늘어난다) */
+const _ych = new MessageChannel(); const _yq = [];
+_ych.port1.onmessage = () => { const f = _yq.shift(); if (f) f(); };
+const yieldUI = () => new Promise(r => { _yq.push(r); _ych.port2.postMessage(0); });
+const FACES = {
+  sans: '"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Nanum Gothic","NanumGothic",sans-serif'
+};
+const canvasBlob = (cv, type, q) => new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('toBlob')), type || 'image/png', q));
+const coarse = () => window.matchMedia('(pointer:coarse)').matches;
+
+/* ── 기억 — 이 브라우저에만(localStorage, name_romanizer. 로 시작). 고른 설정만, 넣은 이름은 남기지 않는다 ── */
+const KP = 'name_romanizer.';
+const lsGet = k => { try { return localStorage.getItem(KP + k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(KP + k, v); } catch (e) { /* 사생활 보호 창 등 — 기억만 못 한다 */ } };
+
+/* ── 복사 · 보내기 · 저장 ── */
+function copyText(s, msg) {
+  const done = () => toast(msg, 3200);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(s).then(done, () => fallbackCopy(s, done)); return; }
+  } catch (e) { /* 아래로 */ }
+  fallbackCopy(s, done);
+}
+/* 휴대폰은 공유 창, 컴퓨터·앱 안은 복사 */
+async function sendLink(text, url) {
+  if (navigator.share && coarse() && !IA.on) {
+    try { await navigator.share({ text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  copyText(text + '\n' + url, '링크를 복사했어요. 단톡방이나 메시지 창에 붙여 넣으세요.');
+}
+function download(blob, name) {
+  if (IA.on) { downloadInApp(blob, name); return; }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+const safeName = s => String(s).replace(/[\\/:*?"<>|\s♥♡]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30) || '영문이름';
+
+/* 자동 생성 — build.py 가 만든다. 손으로 고치지 말 것 */
+/* 성씨 → 흔히 보이는 영문 철자(앞일수록 흔히 보임, 비율은 적지 않는다) */
+const SURV = {"김":["Kim","Gim"],"이":["Lee","Yi","Rhee","I"],"박":["Park","Pak","Bak"],"최":["Choi","Choe"],"정":["Jung","Jeong","Chung"],"강":["Kang","Gang"],"조":["Cho","Jo"],"윤":["Yoon","Yun"],"장":["Jang","Chang"],"임":["Lim","Im","Lym"],"한":["Han"],"오":["Oh","O"],"서":["Seo","Suh"],"신":["Shin","Sin"],"권":["Kwon","Gwon"],"황":["Hwang"],"안":["Ahn","An"],"송":["Song"],"류":["Ryu","Yoo","Yu"],"전":["Jeon","Jun","Chun"],"홍":["Hong"],"고":["Ko","Go","Koh"],"문":["Moon","Mun"],"양":["Yang"],"손":["Son","Sohn"],"배":["Bae","Pae"],"백":["Baek","Paik","Back"],"허":["Heo","Huh","Hur"],"유":["Yoo","Yu"],"남":["Nam"],"심":["Shim","Sim"],"노":["Noh","Roh","No"],"하":["Ha"],"곽":["Kwak","Gwak"],"성":["Sung","Seong"],"차":["Cha"],"주":["Joo","Ju","Chu"],"우":["Woo","U"],"구":["Koo","Gu","Ku"],"민":["Min"],"진":["Jin","Chin"],"지":["Ji","Chi"],"엄":["Um","Eom"],"채":["Chae"],"원":["Won"],"천":["Cheon","Chun"],"방":["Bang"],"공":["Kong","Gong"],"현":["Hyun","Hyeon"],"함":["Ham"],"변":["Byun","Byeon"],"염":["Yeom","Yum"],"여":["Yeo","Yu"],"추":["Choo","Chu"],"도":["Do","Doh"],"소":["So"],"석":["Seok","Suk"],"선":["Sun","Seon"],"설":["Seol","Sul"],"마":["Ma"],"길":["Gil","Kil"],"연":["Yeon","Youn","Yun"],"위":["Wi","Wee"],"표":["Pyo"],"명":["Myung","Myeong"],"기":["Ki","Gi"],"반":["Ban"],"라":["Ra","La"],"왕":["Wang"],"금":["Keum","Geum","Kum"],"옥":["Ok"],"육":["Yook","Yuk"],"인":["In"],"맹":["Maeng"],"제":["Je","Jeh"],"모":["Mo"],"탁":["Tak"],"국":["Kook","Guk"],"은":["Eun"],"편":["Pyun","Pyeon"],"용":["Yong"],"예":["Ye","Yeh"],"경":["Kyung","Gyeong"],"봉":["Bong"],"나":["Na","Ra"],"남궁":["Namgung","Namkoong","Namkung"],"황보":["Hwangbo"],"제갈":["Jegal","Chegal"],"선우":["Sunwoo","Seonu","Sunu"],"독고":["Dokgo","Tokko"],"사공":["Sagong"]};
+
+/* ════════════════════════════════════════════════════════════
+   로마자 — 국어의 로마자 표기법(문화관광부 고시 제2000-8호)
+   사람 이름: 성과 이름을 띄어 쓰고, 이름은 붙여 쓴다(음절 사이 붙임표 허용).
+   이름에서 일어나는 소리 바뀜(한복남 → Han Boknam)은 적지 않는다 → 글자 단위로 옮기고 ㄹㄹ 만 ll.
+   ════════════════════════════════════════════════════════════ */
+const RR_I = ['g', 'kk', 'n', 'd', 'tt', 'r', 'm', 'b', 'pp', 's', 'ss', '', 'j', 'jj', 'ch', 'k', 't', 'p', 'h'];
+const RR_V = ['a', 'ae', 'ya', 'yae', 'eo', 'e', 'yeo', 'ye', 'o', 'wa', 'wae', 'oe', 'yo', 'u', 'wo', 'we', 'wi', 'yu', 'eu', 'ui', 'i'];
+const RR_F = ['', 'k', 'k', 'k', 'n', 'n', 'n', 't', 'l', 'k', 'm', 'l', 'l', 'l', 'p', 'l', 'm', 'p', 'p', 't', 't', 'ng', 't', 't', 'k', 't', 'p', 't'];
+const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ', JUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ';
+const JONG = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+const isHan = ch => { const c = ch.codePointAt(0); return c >= 0xAC00 && c <= 0xD7A3; };
+const jamo = ch => { const c = ch.codePointAt(0) - 0xAC00; return { i: Math.floor(c / 588), v: Math.floor((c % 588) / 28), f: c % 28 }; };
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+
+/* 글자마다 [초성 로마자, 중성, 종성] — ㄹ 받침 뒤 ㄹ 은 l */
+function sylParts(s) {
+  const out = []; let prevF = -1;
+  for (const ch of Array.from(s)) {
+    if (!isHan(ch)) { out.push({ ch, i: '', v: '', f: '', bad: true }); prevF = -1; continue; }
+    const j = jamo(ch);
+    out.push({ ch, j, i: (j.i === 5 && prevF === 8) ? 'l' : RR_I[j.i], v: RR_V[j.v], f: RR_F[j.f] });
+    prevF = j.f;
+  }
+  return out;
+}
+const romanize = s => sylParts(s).map(p => p.i + p.v + p.f).join('');
+const romanizeHy = s => sylParts(s).map(p => p.i + p.v + p.f).join('-');
+
+/* 흔히 쓰는 다른 철자 — 글자 하나에서 만들 수 있는 것만(뜻이 바뀌지 않는 소리 적기 습관).
+   표기법 철자가 언제나 맨 앞. 「많이 쓴다」는 순위는 매기지 않는다 */
+function sylAlts(p) {
+  if (p.bad) return [''];
+  const j = p.j, I = [p.i], V = [p.v];
+  if (j.i === 0 && p.i === 'g') I.push('k');                       /* 경 Kyung · 길 Kil */
+  if (j.i === 9 && (j.v === 20 || j.v === 2)) I.push('sh');         /* 신 Shin · 시 Shi */
+  if (j.v === 4) V.push('u');                                       /* 정 Jung · 성 Sung · 석 Suk */
+  if (j.v === 6) { if (j.f === 21 && j.i === 11) V.push('you', 'yu'); else V.push('yu', 'you'); }  /* 영 Young · 현 Hyun */
+  if (j.v === 13) V.push(j.i === 11 ? 'woo' : 'oo');                /* 준 Joon · 우 Woo */
+  if (j.v === 17) V.push('yoo');                                    /* 유 Yoo · 윤 Yoon */
+  if (j.v === 19) V.push('ee');                                     /* 희 Hee */
+  if (j.v === 20 && j.i === 11 && j.f === 0) V.push('ee');          /* 이 Ee */
+  /* 표기법 철자 맨 앞, 그다음은 많이 바꾼 쪽부터(Kyung 이 Gyung 보다 먼저) */
+  const out = [];
+  I.forEach((a, x) => V.forEach((b, y) => out.push({ s: a + b + p.f, c: (x ? 1 : 0) + (y ? 1 : 0), o: out.length })));
+  out.sort((m, n) => (m.c === 0 ? -1 : n.c === 0 ? 1 : (n.c - m.c) || (m.o - n.o)));
+  return [...new Set(out.map(o => o.s))].slice(0, 6);
+}
+/* 이름 철자 후보 — 표기법(바뀐 글자 0개)부터, 바꾼 글자가 적은 순. 최대 n 개 */
+function givenVariants(given, n) {
+  const parts = sylParts(given);
+  let combos = [{ s: '', k: 0, hy: [] }];
+  for (const p of parts) {
+    const alts = sylAlts(p);
+    const next = [];
+    for (const c of combos) alts.forEach((a, k) => next.push({ s: c.s + a, k: c.k + (k ? 1 : 0), hy: c.hy.concat(a) }));
+    next.sort((x, y) => x.k - y.k);
+    combos = next.slice(0, 400);
+  }
+  const seen = new Set(), out = [];
+  for (const c of combos) { if (seen.has(c.s)) continue; seen.add(c.s); out.push({ s: cap(c.s), k: c.k, hy: cap(c.hy.join('-')) }); if (out.length >= (n || 12)) break; }
+  return out;
+}
+
+/* 성 — 두 글자 성은 목록에 있을 때만 나눈다(네 글자 이름이면 두 글자 성 먼저) */
+function splitName(raw, mode) {
+  const t = String(raw).trim().replace(/\s+/g, ' ');
+  const o = { raw: t, sur: '', given: '', err: '' };
+  if (!t) { o.err = 'empty'; return o; }
+  if (/[^가-힣\s]/.test(t)) { o.err = /[a-zA-Z]/.test(t) ? 'latin' : 'char'; }
+  if (t.includes(' ')) { const a = t.split(' '); o.sur = a[0]; o.given = a.slice(1).join(''); o.how = 'space'; return o; }
+  const ch = Array.from(t);
+  if (ch.length === 1) { o.given = t; o.err = o.err || 'one'; return o; }
+  const two = ch.slice(0, 2).join('');
+  /* 세 글자: 앞 한 글자가 흔한 성이면(황보람 → 황 보람) 한 글자 성으로. 남궁·제갈만 예외 */
+  const auto2 = SURV[two] && (ch.length >= 4 || (ch.length === 3 && (!SURV[ch[0]] || two === '남궁' || two === '제갈')));
+  o.can2 = !!SURV[two] && ch.length >= 3;
+  if (mode === '2' || (mode !== '1' && auto2)) { o.sur = two; o.given = ch.slice(2).join(''); o.how = mode === '2' ? 'set' : 'auto2'; }
+  else { o.sur = ch[0]; o.given = ch.slice(1).join(''); o.how = mode === '1' ? 'set' : 'auto1'; }
+  if (!o.given) { o.err = o.err || 'nogiven'; }
+  return o;
+}
+/* 성 철자 후보 — 흔히 보이는 철자 목록 + 표기법 철자. 목록에 없는 성은 표기법과 글자별 다른 철자로 */
+function surOptions(sur) {
+  if (!sur) return [];
+  const rr = cap(romanize(sur));
+  const L = SURV[sur] ? SURV[sur].slice() : givenVariants(sur, 4).map(v => v.s);
+  if (!L.includes(rr)) L.push(rr);
+  return L.map(s => ({ s, rr: s === rr }));
+}
+
+/* 확인 — 실제로 걸리는 것만 */
+function checksOf(o, surS, givS) {
+  const C = [];
+  if (o.err === 'latin') C.push(['bad', '영문 글자가 섞여 있어요. 한글 이름만 넣어 주세요. 영문 철자가 이미 있으면 그 철자를 그대로 쓰면 돼요.']);
+  else if (o.err === 'char') C.push(['bad', '한글이 아닌 글자(숫자·기호)는 빼고 바꿨어요.']);
+  if (o.err === 'one') C.push(['warn', '한 글자만 넣었어요. 성과 이름을 함께 넣으면 여권식으로 바꿔 드려요.']);
+  const parts = sylParts(o.given);
+  for (let k = 0; k + 1 < parts.length; k++) {
+    const a = parts[k], b = parts[k + 1];
+    if (a.bad || b.bad) continue;
+    if (a.j.f && b.j.i === 11) { C.push(['warn', '「' + a.ch + b.ch + '」은 받침 뒤에 ㅇ 으로 시작하는 글자가 와서, 영어로 읽으면 글자 경계가 흐려져요(' + cap(a.i + a.v + a.f + b.v + b.f) + '). 붙임표를 넣은 ' + cap(a.i + a.v + a.f) + '-' + (b.v + b.f) + ' 도 생각해 보세요.']); break; }
+  }
+  for (let k = 0; k + 1 < parts.length; k++) {
+    const a = parts[k], b = parts[k + 1];
+    if (a.bad || b.bad) continue;
+    if (!a.j.f && b.j.i === 11 && /[aeiouy]$/.test(a.v) && /^[aeiou]/.test(b.v)) { C.push(['info', '「' + a.ch + b.ch + '」처럼 모음이 이어지면 ' + cap(a.i + a.v + b.v + b.f) + '를 한 덩어리로 읽기 쉬워요. 붙임표(' + cap(a.i + a.v) + '-' + b.v + b.f + ')를 넣어도 돼요.']); break; }
+  }
+  if (/eo/i.test(givS) || /eo/i.test(surS)) C.push(['info', 'eo(ㅓ)는 영어권에서 「이오」처럼 읽히기도 해요. 그래서 정 Jung, 성 Sung처럼 u로 쓰는 사람도 많아요. 다만 여권 철자는 한 번 정하면 바꾸기 어려워요.']);
+  if (givS.replace(/-/g, '').length >= 11) C.push(['info', '이름 부분이 ' + givS.replace(/-/g, '').length + '자예요. 항공권·카드처럼 칸이 짧은 곳에서는 뒤가 잘릴 수 있어요.']);
+  if (o.sur && SURV[o.sur] && surS !== SURV[o.sur][0]) C.push(['info', '「' + o.sur + '」 씨는 ' + SURV[o.sur].slice(0, 3).join(' · ') + ' 같은 철자를 흔히 써요. 가족이 이미 여권이 있으면 같은 성 철자로 맞추는 경우가 많아요.']);
+  if (!C.some(c => c[0] === 'bad' || c[0] === 'warn')) C.unshift(['ok', givS.includes('-') ? '여권·명함에 쓸 수 있는 모양이에요(영문 글자와 붙임표만).' : '여권·명함에 쓸 수 있는 모양이에요(영문 글자만, 기호 없음).']);
+  return C;
+}
+
+/* 쓰는 곳별 형식 */
+function formats(surS, givS) {
+  const G = givS, Gp = G.replace(/-/g, ''), SU = surS.toUpperCase();
+  const ini = G.split('-').length > 1 ? G.split('-').map(x => x[0].toUpperCase() + '.').join('-') : G[0].toUpperCase() + '.';
+  const L = [
+    ['여권(영문 성명)', SU + ' ' + G.toUpperCase(), '성 칸 ' + SU + ' · 이름 칸 ' + G.toUpperCase()],
+    ['항공권 예약', SU + '/' + Gp.toUpperCase(), '성/이름 — 여권과 글자 하나까지 같아야 해요'],
+    ['영문 명함 · 이메일 서명', G + ' ' + surS, '이름을 앞에, 성을 뒤에'],
+    ['서류 · 논문 (성 먼저)', surS + ', ' + G, '쉼표로 성을 앞에'],
+    ['머리글자', ini + ' ' + surS, '논문 저자 표기 등'],
+    ['이메일 아이디 예', (Gp + '.' + surS).toLowerCase(), '소문자 · 마침표'],
+  ];
+  if (!surS) return L.map(r => [r[0], r[1].replace(/^\s*[,/]?\s*/, '').trim(), r[2]]);
+  return L;
+}
+
+/* ════════════════════════════════════════════════════════════
+   인앱 브라우저 (네이버·카카오톡 앱 안에서 열었을 때)
+
+   앱 안 화면은 OS 가 주는 WebView 인데 내려받기 기능이 없다. blob: 주소를 넘기면
+   아무 일도 일어나지 않고 끝난다(카카오 공식 안내: a[download] 는 안드로이드만,
+   iOS 는 data: 주소 방식). 서버가 없는 도구라 응답 헤더로 내려줄 수도 없다.
+     ① 저장은 blob: 대신 data: 주소로 시도한다
+     ② 시작하기 전에 창을 띄워 브라우저를 옮기게 한다 — 다 쓰고 나서 옮기면
+        내용을 다시 써야 한다(내용은 그 탭에만 보관)
+     ③ 아이폰은 사파리를 강제로 열 수 없어 주소 복사 + 메뉴 안내로 간다
+   ════════════════════════════════════════════════════════════ */
+const UA = navigator.userAgent || '';
+const IA = {
+  naver: /NAVER\(inapp/i.test(UA),
+  kakao: /KAKAOTALK/i.test(UA),
+  line: /\bLine\//i.test(UA),
+  ios: /iPhone|iPad|iPod/i.test(UA),
+  android: /Android/i.test(UA)
+};
+IA.on = IA.naver || IA.kakao || IA.line ||
+  /Instagram|FBAN|FBAV|FB_IAB|DaumApps|everytimeApp|band\/|KAKAOSTORY/i.test(UA) ||
+  (IA.android && /;\s*wv\)/i.test(UA));   /* 안드로이드 WebView 표시 */
+
+/* 다른 브라우저로 넘기기. 앱마다 길이 달라 순서대로 고른다 */
+function externalUrl() {
+  const url = location.href;
+  if (IA.kakao) return 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url);
+  if (IA.line) return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'openExternalBrowser=1';
+  /* 안드로이드는 크롬을 직접 연다. 크롬이 없으면 fallback 주소로 되돌아온다 */
+  if (IA.android) return 'intent://' + url.replace(/^https?:\/\//i, '') +
+    '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+  return '';          /* 아이폰은 사파리를 강제로 열 수 없다 */
+}
+function copyAddr(guide) {
+  const url = location.href;
+  const done = () => toast(guide ? '주소를 복사했습니다. 사파리를 열고 붙여 넣거나, 오른쪽 아래 메뉴에서 「다른 브라우저로 열기」를 누르세요.' : '주소를 복사했습니다.', 5200);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done)); return; }
+  } catch (e) { /* 아래로 */ }
+  fallbackCopy(url, done);
+}
+function fallbackCopy(text, done) {
+  const t = document.createElement('textarea');
+  t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;left:-9999px;top:0';
+  document.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length);
+  try { document.execCommand('copy'); done(); } catch (e) { toast('주소를 길게 눌러 복사해 주세요.', 4200); }
+  t.remove();
+}
+/* 앱 안에서는 blob: 이 통하지 않아 data: 주소로 바꿔 넘긴다.
+   data: 는 문자열이라 너무 크면 앱이 통째로 거부한다 — 프로필 PNG(1MB 안팎)는 넉넉히 들어가게 상한을 둔다 */
+function downloadInApp(blob, name) {
+  const how = () => '위쪽 「' + $('iaGo').textContent + '」를 눌러 주세요.';
+  if (blob.size > 10 * 1024 * 1024) { toast('앱 안에서는 10MB가 넘는 파일을 저장할 수 없습니다. ' + how(), 5600); return; }
+  const go = href => {
+    const a = document.createElement('a');
+    a.href = href; a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  const fr = new FileReader();
+  fr.onload = () => { try { go(fr.result); } catch (e) { /* 안내로 넘어간다 */ } };
+  fr.onerror = () => toast('앱 안에서는 저장이 막혀 있습니다. ' + how(), 5200);
+  fr.readAsDataURL(blob);
+}
+/* 앱 안에서 열렸으면 작성을 막고 창을 띄운다.
+   띠만 띄워 두면 다 채운 뒤에야 저장이 안 되는 걸 알게 되는데,
+   입력은 그 탭에만 있어서 브라우저를 옮기는 순간 처음부터 다시 써야 한다 */
+function initInApp() {
+  if (!IA.on) return;
+  const app = IA.naver ? '네이버 앱' : IA.kakao ? '카카오톡' : IA.line ? '라인' : '앱';
+  const copyOnly = IA.ios && !IA.kakao && !IA.line;   /* 아이폰은 사파리를 강제로 열 수 없다 */
+  /* 카카오·라인은 앱의 자체 통로(kakaotalk:// · openExternalBrowser)로 기본 브라우저가 열린다.
+     크롬을 콕 집어 여는 것은 안드로이드 intent:// 뿐이라 단추 문구와 순서를 나눈다 */
+  const chromeIntent = IA.android && !IA.kakao && !IA.line;
+
+  document.body.classList.add('inapp');
+  $('iaMsg').textContent = app + ' 안에서는 파일 저장이 안 될 수 있어요.';
+  $('doneInapp').classList.remove('hide');
+
+  $('iaDesc').innerHTML = '<b>' + app + '</b> 안에서 열렸습니다. 이 화면에서는 ' +
+    '<b>명단 파일(CSV)이 저장되지 않을 수 있습니다.</b> 이름 변환과 복사는 그대로 됩니다.';
+  const steps = copyOnly
+    ? ['아래 <b>주소 복사</b>를 누르세요.',
+       '오른쪽 아래 <b>메뉴</b>에서 「다른 브라우저로 열기」를 누르거나, <b>사파리</b> 주소창에 붙여 넣으세요.']
+    : chromeIntent
+      ? ['아래 <b>크롬에서 열기</b>를 누르세요.',
+         '크롬이 없으면 오른쪽 위 <b>메뉴</b>에서 「다른 브라우저로 열기」를 누르세요.']
+      : ['아래 <b>다른 브라우저로 열기</b>를 누르세요.',
+         '열리지 않으면 ' + (IA.ios ? '화면의' : '오른쪽 위') + ' <b>메뉴</b>에서 「다른 브라우저로 열기」를 누르세요.'];
+  $('iaSteps').innerHTML = steps.map(s => '<li>' + s + '</li>').join('');
+  const label = copyOnly ? '주소 복사' : chromeIntent ? '크롬에서 열기' : '다른 브라우저로 열기';
+  $('iaGo').textContent = label;
+  $('iaGo2').textContent = label;
+  $('doneGo').textContent = label;
+  $('iaSub').textContent = copyOnly
+    ? '사파리에 붙여 넣거나, 오른쪽 아래 메뉴에서 「다른 브라우저로 열기」를 누르세요.'
+    : '이름 변환·복사는 그대로 돼요. 파일을 저장하려면 브라우저를 옮겨 주세요.';
+
+  /* 윗머리 띠를 ✕ 로 닫았으면 새로 고쳐도 띠는 다시 띄우지 않는다(막는 창은 열 때마다 뜬다) */
+  let hidden = false;
+  try { hidden = sessionStorage.getItem('name_romanizer.iahide') === '1'; } catch (e) { /* 무시 */ }
+  if (hidden) document.body.classList.remove('inapp');
+  /* 이름은 앱 안에서도 바꾼다 — 막는 창은 띄우지 않고, CSV 저장만 data: 주소로 돌려 받는다(downloadInApp) */
+}
+/* 창이 떠 있는 동안에는 뒤쪽 입력칸을 아예 만지지 못하게 한다 */
+function lockInApp(on) {
+  document.body.classList.toggle('ia-lock', on);
+  const w = document.querySelector('.wrap');
+  if (on) w.setAttribute('inert', ''); else w.removeAttribute('inert');
+  if (!on) $('iaModal').blur();
+}
+/* 아이폰에서 주소를 복사했으면 창 안에서 바로 알려 준다 — 토스트는 창 위에 잠깐 떴다 사라진다 */
+function iaCopied() {
+  $('iaDesc').innerHTML = '주소를 <b>복사했습니다.</b> 이제 <b>사파리</b>를 열고 주소창에 붙여 넣으세요.';
+  $('iaSteps').innerHTML = '<li>홈 화면에서 <b>사파리</b>를 엽니다.</li>' +
+    '<li>주소창을 길게 눌러 <b>붙여넣기</b> 하세요.</li>' +
+    '<li>또는 이 화면 오른쪽 아래 <b>메뉴</b> → 「다른 브라우저로 열기」.</li>';
+}
+
+/* ════════════════════════════════════════════════════════════
+   저장 완료 카드 — 저장이 끝나면 본문 흐름 안에 펼치고 그쪽을 보여 준다(화면을 덮지 않는다)
+   ════════════════════════════════════════════════════════════ */
+const DONE = {
+  goT: 0,
+  show(msg, steps) {
+    $('doneMsg').textContent = msg;
+    $('doneSteps').innerHTML = (steps || []).map(x => '<li>' + x + '</li>').join('');
+    $('doneCard').classList.remove('hide');
+    clearTimeout(this.goT);
+    this.goT = setTimeout(() => $('doneCard').scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+  },
+  hide() { $('doneCard').classList.add('hide'); }
+};
+
+/* ════════════════════════════════════════════════════════════
+   화면 — 이름 하나(철자 고르기·형식·글자별 풀이) · 여러 명(표 복사·CSV)
+   ════════════════════════════════════════════════════════════ */
+const qsa = (s, r) => Array.from((r || document).querySelectorAll(s));
+const S = { mode: 'one', split: 'auto', hy: 0, sur: '', giv: '', msur: 'pop', mcase: 'up', mhy: 0 };
+let LASTKEY = '', CUROUT = '';
+const EXAMPLE = '홍길동';
+
+function save() { lsSet('opt', JSON.stringify({ hy: S.hy, msur: S.msur, mcase: S.mcase, mhy: S.mhy })); }
+function load() {
+  try {
+    const o = JSON.parse(lsGet('opt') || 'null');
+    if (o) {
+      if (o.hy === 0 || o.hy === 1) S.hy = o.hy;
+      if (o.mhy === 0 || o.mhy === 1) S.mhy = o.mhy;
+      if (['pop', 'rr'].includes(o.msur)) S.msur = o.msur;
+      if (['up', 'cap', 'rev'].includes(o.mcase)) S.mcase = o.mcase;
+    }
+  } catch (e) { /* 처음 상태로 */ }
+}
+function setSeg(name, v) {
+  qsa('[data-seg="' + name + '"] button').forEach(b => { const on = b.dataset.v === String(v); b.classList.toggle('on', on); if (b.getAttribute('role') === 'tab') b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+}
+function segClick(sel, fn) {
+  qsa(sel).forEach(el => el.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b && el.contains(b)) fn(b.dataset.v, b); }));
+}
+/* 입력 중(한글 조합)에는 낱자 ㄱ·ㅏ 가 잠깐 들어온다 — 조용히 뺀다 */
+const cleanIn = s => String(s || '').replace(/[ㄱ-ㅎㅏ-ㅣ]/g, '');
+
+/* ── 이름 하나 ── */
+function renderOne() {
+  const raw = cleanIn($('inName').value).trim();
+  const isEx = !raw;
+  const o = splitName(isEx ? EXAMPLE : raw, S.split);
+  const key = o.sur + '|' + o.given;
+  if (key !== LASTKEY) { S.sur = ''; S.giv = ''; LASTKEY = key; }
+  const so = surOptions(o.sur);
+  if (!so.some(x => x.s === S.sur)) S.sur = so.length ? so[0].s : '';
+  const gv = o.given ? givenVariants(o.given, 12) : [];
+  let g = gv.find(v => v.s === S.giv) || gv[0];
+  if (g) S.giv = g.s;
+  const givS = g ? (S.hy ? g.hy : g.s) : '';
+  const surS = S.sur;
+  const full = (surS ? surS + ' ' : '') + givS;
+  const pass = full.toUpperCase();
+  CUROUT = pass;
+  $('bigPass').textContent = pass || '—';
+  $('bigNorm').textContent = isEx ? '예시: 홍길동 — 위 칸에 이름을 넣어 보세요' : (full || '');
+  $('bigOut').classList.toggle('ex', isEx);
+  $('mbN').textContent = pass;
+
+  /* 성 나누기 안내 */
+  let sh = '';
+  if (o.how === 'auto2') sh = '「' + o.sur + '」 두 글자 성으로 나눴어요';
+  else if (o.how === 'auto1' && o.can2) sh = '「' + Array.from(o.raw).slice(0, 2).join('') + '」 두 글자 성이면 바꾸세요';
+  else if (o.how === 'space') sh = '띄어 쓴 앞쪽을 성으로 봤어요';
+  $('splitHint').textContent = sh;
+
+  /* 성 철자 */
+  $('surChips').innerHTML = so.map((x, k) => '<button type="button" data-v="' + esc(x.s) + '" class="' + (x.s === S.sur ? 'on' : '') + '" aria-pressed="' + (x.s === S.sur) + '">' + esc(x.s) + (x.rr ? '<small>표기법</small>' : k === 0 && SURV[o.sur] ? '<small>흔히 씀</small>' : '') + '</button>').join('');
+  $('surHint').textContent = o.sur ? (SURV[o.sur] ? '「' + o.sur + '」 씨가 흔히 쓰는 철자' : '목록에 없는 성 — 글자대로 바꿨어요') : '성이 없어요';
+  /* 이름 철자 */
+  $('givChips').innerHTML = gv.map((v, k) => '<button type="button" data-v="' + esc(v.s) + '" class="' + (v.s === S.giv ? 'on' : '') + '" aria-pressed="' + (v.s === S.giv) + '">' + esc(S.hy ? v.hy : v.s) + (k === 0 ? '<small>표기법</small>' : '') + '</button>').join('');
+  setSeg('hy', S.hy);
+
+  /* 확인 */
+  const C = isEx ? [] : checksOf(o, surS, givS);
+  if (!isEx && !o.sur && o.given) C.unshift(['warn', '성이 없어요. 성과 이름을 함께 넣어 주세요.']);
+  $('checks').innerHTML = C.map(c => '<li class="' + c[0] + '">' + esc(c[1]) + '</li>').join('');
+
+  /* 형식 */
+  const F = surS && givS ? formats(surS, givS) : [];
+  $('fmtList').innerHTML = F.map(f => '<li><button type="button" data-copy="' + esc(f[1]) + '"><span class="fl">' + esc(f[0]) + '</span><b>' + esc(f[1]) + '</b><small>' + esc(f[2]) + '</small><i aria-hidden="true">📋</i></button></li>').join('')
+    || '<li class="empty">성과 이름을 함께 넣으면 여권·항공권·명함 형식이 나와요.</li>';
+
+  /* 글자별 */
+  const rows = [];
+  const add = (txt, who, isSur) => {
+    sylParts(txt).forEach(p => {
+      if (p.bad) return;
+      const j = p.j;
+      const bits = [[CHO[j.i], p.i || '(없음)'], [JUNG[j.v], p.v]];
+      if (j.f) bits.push([JONG[j.f], p.f]);
+      const rr = p.i + p.v + p.f;
+      rows.push('<div class="sy' + (isSur ? ' s' : '') + '"><span class="c">' + esc(p.ch) + '<em>' + who + '</em></span><span class="j">' +
+        bits.map(b => '<span><i>' + esc(b[0]) + '</i>' + esc(b[1]) + '</span>').join('<u>+</u>') + '</span><b>' + esc(rr) + '</b></div>');
+      who = '';
+    });
+  };
+  add(o.sur, '성', true); add(o.given, '이름', false);
+  $('sylList').innerHTML = rows.join('') || '<p class="fine">한글 이름을 넣으면 글자마다 풀어 보여 드려요.</p>';
+}
+
+/* ── 여러 명 ── */
+let MANY = [];
+function manyRows() {
+  const L = cleanIn($('inMany').value).split(/[\n,，;、\t]+/).map(s => s.trim()).filter(Boolean).slice(0, 500);
+  return L.map(raw => {
+    const o = splitName(raw, 'auto');
+    let sur = o.sur ? (S.msur === 'pop' && SURV[o.sur] ? SURV[o.sur][0] : cap(romanize(o.sur))) : '';
+    let giv = o.given ? cap(S.mhy ? romanizeHy(o.given) : romanize(o.given)) : '';
+    const warn = [];
+    if (o.err === 'latin' || o.err === 'char') warn.push('한글 아닌 글자');
+    if (!o.sur) warn.push('성 없음');
+    if (o.can2 && o.how === 'auto1') warn.push('두 글자 성?');
+    if (o.how === 'auto2') warn.push('두 글자 성');
+    const ps = sylParts(o.given);
+    for (let k = 0; k + 1 < ps.length; k++) if (!ps[k].bad && !ps[k + 1].bad && ps[k].j.f && ps[k + 1].j.i === 11) { warn.push('받침+ㅇ'); break; }
+    if (S.mcase === 'up') { sur = sur.toUpperCase(); giv = giv.toUpperCase(); }
+    const en = S.mcase === 'rev' ? (giv + ' ' + sur).trim() : (sur + ' ' + giv).trim();
+    return { raw, sur, giv, en, warn };
+  });
+}
+function renderMany() {
+  setSeg('msur', S.msur); setSeg('mcase', S.mcase); setSeg('mhy', S.mhy);
+  MANY = manyRows();
+  const tb = $('manyTab').tBodies[0];
+  tb.innerHTML = MANY.length ? MANY.map((r, k) => '<tr data-k="' + k + '" tabindex="0"><td class="n">' + (k + 1) + '</td><td class="k">' + esc(r.raw) + '</td><td class="en">' + esc(r.en) + '</td><td>' + esc(r.sur) + '</td><td>' + esc(r.giv) + '</td><td class="w">' +
+    (r.warn.length ? r.warn.map(w => '<span class="' + (w === '두 글자 성' ? 'i' : '') + '">' + (w === '두 글자 성' ? '' : '⚠ ') + esc(w) + '</span>').join(' ') : '<span class="okk">✓</span>') + '</td></tr>').join('')
+    : '<tr><td colspan="6" class="emp">위 칸에 이름을 한 줄에 한 명씩 넣으면 여기에 표로 나와요.</td></tr>';
+  $('manyInfo').textContent = MANY.length ? MANY.length + '명' : '';
+  $('btnTsv').disabled = $('btnCsv').disabled = !MANY.length;
+}
+function manyTable() { return [['한글', '영문', '성', '이름']].concat(MANY.map(r => [r.raw, r.en, r.sur, r.giv])); }
+
+/* ── 탭 ── */
+function setMode(v) {
+  S.mode = v === 'many' ? 'many' : 'one';
+  setSeg('mode', S.mode);
+  qsa('#main .pane, #main .pane1').forEach(el => el.classList.toggle('hide', (el.id === 'pMany') !== (S.mode === 'many')));
+  $('sylCard').classList.toggle('hide', S.mode === 'many');
+  if (S.mode === 'many') renderMany(); else renderOne();
+  mbarUpdate();
+}
+
+/* ── 휴대폰 아래 띠 ── */
+let resVis = true;
+const MQ = window.matchMedia('(min-width:980px)');
+function mbarUpdate() {
+  const on = !MQ.matches && S.mode === 'one' && !resVis && !!$('inName').value.trim();
+  $('mbar').classList.toggle('on', on);
+  $('mbar').setAttribute('aria-hidden', on ? 'false' : 'true');
+}
+function goExternal() {
+  const u = externalUrl();
+  if (u) location.href = u; else { copyAddr(true); iaCopied(); }
+}
+
+function init() {
+  load();
+  segClick('[data-seg="mode"]', setMode);
+  segClick('[data-seg="split"]', v => { S.split = v; setSeg('split', v); renderOne(); });
+  segClick('[data-seg="hy"]', v => { S.hy = +v; save(); renderOne(); });
+  segClick('[data-seg="msur"]', v => { S.msur = v; save(); renderMany(); });
+  segClick('[data-seg="mcase"]', v => { S.mcase = v; save(); renderMany(); });
+  segClick('[data-seg="mhy"]', v => { S.mhy = +v; save(); renderMany(); });
+  $('inName').addEventListener('input', () => { if (S.split !== 'auto') { S.split = 'auto'; setSeg('split', 'auto'); } renderOne(); mbarUpdate(); });
+  $('inName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('inName').blur(); } });
+  $('exChips').addEventListener('click', e => { const b = e.target.closest('button[data-n]'); if (!b) return; $('inName').value = b.dataset.n; S.split = 'auto'; setSeg('split', 'auto'); renderOne(); });
+  $('surChips').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; S.sur = b.dataset.v; renderOne(); });
+  $('givChips').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; S.giv = b.dataset.v; renderOne(); });
+  $('fmtList').addEventListener('click', e => { const b = e.target.closest('button[data-copy]'); if (b) copyText(b.dataset.copy, '「' + b.dataset.copy + '」 복사했어요.'); });
+  const copyMain = () => { if (!$('inName').value.trim()) { toast('먼저 한글 이름을 넣어 주세요.'); $('inName').focus(); return; } copyText(CUROUT, '「' + CUROUT + '」 복사했어요.'); };
+  $('btnCopyMain').addEventListener('click', copyMain);
+  $('mbCopy').addEventListener('click', copyMain);
+
+  $('inMany').addEventListener('input', renderMany);
+  const openRow = tr => { const r = MANY[+tr.dataset.k]; if (!r) return; $('inName').value = r.raw; S.split = 'auto'; setSeg('split', 'auto'); setMode('one'); $('resCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  $('manyTab').addEventListener('click', e => { const tr = e.target.closest('tr[data-k]'); if (tr) openRow(tr); });
+  $('manyTab').addEventListener('keydown', e => { const tr = e.target.closest('tr[data-k]'); if (tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openRow(tr); } });
+  $('btnTsv').addEventListener('click', () => { if (!MANY.length) return; copyText(manyTable().map(r => r.join('\t')).join('\n'), MANY.length + '명을 표로 복사했어요. 엑셀 칸에 붙여 넣으세요.'); });
+  $('btnCsv').addEventListener('click', () => {
+    if (!MANY.length) return;
+    const q = s => /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    const csv = '﻿' + manyTable().map(r => r.map(q).join(',')).join('\r\n') + '\r\n';
+    download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), '영문이름_' + MANY.length + '명.csv');
+    DONE.show('「영문이름_' + MANY.length + '명.csv」를 저장했어요.', ['엑셀에서 열면 한글이 그대로 보여요(UTF-8).', '여권이 있는 사람은 여권 철자로 고쳐 쓰세요.']);
+  });
+
+  $('doneHide').addEventListener('click', () => DONE.hide());
+  $('iaGo').addEventListener('click', goExternal);
+  $('iaGo2').addEventListener('click', goExternal);
+  $('doneGo').addEventListener('click', goExternal);
+  $('iaStay').addEventListener('click', () => lockInApp(false));
+  $('iaX').addEventListener('click', () => { document.body.classList.remove('inapp'); try { sessionStorage.setItem('name_romanizer.iahide', '1'); } catch (e) { /* 무시 */ } });
+
+  if ('IntersectionObserver' in window)
+    new IntersectionObserver(es => { es.forEach(e => { resVis = e.isIntersecting; }); mbarUpdate(); }).observe($('bigOut'));
+  if (MQ.addEventListener) MQ.addEventListener('change', mbarUpdate); else MQ.addListener(mbarUpdate);
+
+  initInApp();
+  setSeg('hy', S.hy);
+  setMode('one');
+  renderMany();
+  setMode('one');
+}
+init();
+</script>
+</body>
+</html>
